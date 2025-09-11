@@ -22,7 +22,7 @@ User Function CFGINN()
 						"SQL Exeqtor",;
 						"Analise de tabelas"} 
 
-	Private cCadastro := "Executador de Fonte - V2.6"
+	Private cCadastro := "Executador de Fonte - V2.7"
 													
 	oDlgExe    := MSDialog():New( 224,385,551,917,cCadastro,,,.F.,,,,,,.T.,,,.T. )
 	oGrp1      := TGroup():New( 004,004,152,124," Rotinas Internas ",oDlgExe,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -284,6 +284,7 @@ Static Function CONTPROV()
 		cMemhis += "MsUnLock('"+mv_par01+"')" + CRLF
 	endif
 	if mv_par02 == "2"
+
 		cMemhis += CRLF + "Indice" + CRLF
 		dbSelectArea("SIX")
 		SIX->(DbSetOrder(1))
@@ -300,19 +301,49 @@ Static Function CONTPROV()
 		cMemhis += CRLF + "Gatilho" + CRLF	
 		
 		if empty(cGatilh)
-			cMemhis += "nenhum" + CRLF	
+			cMemhis += "nenhum" + CRLF
 		else
 			cMemhis += cGatilh
 		endif
 		
 		cMemhis += CRLF + "Chave unica" + CRLF	
 		
-		cX2Unico := POSICIONE("SX2",1,mv_par01,"X2_UNICO")
+		cX2Unico := POSICIONE("SX2",1,mv_par01,"X2_UNICO") + CRLF
 		if empty(cX2Unico)
 			cMemhis += "nenhum" + CRLF	
 		else
 			cMemhis += alltrim(cX2Unico)
 		endif
+
+
+		cMemhis += CRLF + "Vinculos" + CRLF	
+		
+		dbSelectArea("SX9")
+		SX9->(DbSetOrder(1))
+		SX9->(dbSeek(mv_par01))
+				
+		WHILE !SX9->(EOF()) .AND. ALLTRIM(SX9->X9_DOM) == mv_par01
+			cMemhis += SX9->X9_IDENT + cDiv
+			cMemhis += alltrim(SX9->X9_DOM) + cDiv + ALLTRIM(SX9->X9_CDOM) + cDiv
+			cMemhis += alltrim(SX9->X9_EXPDOM) + cDiv
+			cMemhis += alltrim(SX9->X9_EXPCDOM) + cDiv
+			cMemhis += CRLF
+			SX9->(dbSkip())
+		ENDDO
+
+		dbSelectArea("SX9")
+		SX9->(DbSetOrder(2))
+		SX9->(dbSeek(mv_par01))
+				
+		WHILE !SX9->(EOF()) .AND. ALLTRIM(SX9->X9_CDOM) == mv_par01
+			cMemhis += SX9->X9_IDENT + cDiv
+			cMemhis += alltrim(SX9->X9_DOM) + cDiv + ALLTRIM(SX9->X9_CDOM) + cDiv
+			cMemhis += alltrim(SX9->X9_EXPDOM) + cDiv
+			cMemhis += alltrim(SX9->X9_EXPCDOM) + cDiv
+			cMemhis += CRLF
+			SX9->(dbSkip())
+		ENDDO 
+
 	endif
 	
 	SX3->(RestArea(aAreax3))
